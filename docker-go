@@ -1,0 +1,10 @@
+pipeline {
+    agent { docker 'go:1.12.5' }
+    stages {
+        stage('build') {
+            steps {
+                sh 'go version'
+            }
+        }
+    }
+}
