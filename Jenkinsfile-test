@@ -1,0 +1,43 @@
+pipeline {
+    agent {
+        docker {
+            image 'golang:1.12.5'
+            args  '-u root'
+        }
+    }
+
+    environment {
+        REPO = 'https://github.com/win5do/go-hello-docker.git'
+        CICD = 'https://github.com/win5do/jenkins-pipeline.git'
+    }
+
+    parameters {
+        choice name: 'BRANCH', choices: ['master']
+    }
+
+    stages {
+        stage('build') {
+            steps {
+                git branch: "${params.BRANCH}", url: "${REPO}", credentialsId: 'win5do'
+                sh './build.sh'
+                dir('cicd') {
+                    git branch: 'cicd', url: "${CICD}", credentialsId: 'win5do'
+                }
+                sh 'ls -l'
+                sh 'cp cicd/Dockerfile .'
+                script {
+                    def newImage = docker.build("win5do/first:latest")
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+                        newImage.push()
+                    }
+                }
+            }
+        }
+
+        stage('deploy') {
+            steps {
+                echo 'todo deploy'
+            }
+        }
+    }
+}

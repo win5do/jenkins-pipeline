@@ -1,4 +1,4 @@
 FROM ubuntu
-EXPOSE 80
-COPY ./dist /opt/
+COPY ./dist /opt/dist/
+EXPOSE 5100
 CMD ["/opt/dist/main"]
