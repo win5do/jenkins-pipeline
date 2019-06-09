@@ -1,0 +1,28 @@
+version: '3'
+services:
+  registry:
+    image: "registry"
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./registry:/var/lib/registry
+  jenkins:
+    image: "jenkins/jenkins:lts"
+    user: root
+    restart: unless-stopped
+    ports:
+      - "8180:8080"
+      - "50000:50000"
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/bin/docker
+  rancher:
+    image: "rancher/rancher"
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./rancher:/var/lib/rancher
