@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'golang:1.12.5'
-            args  '-u root'
-        }
-    }
+    agent none
 
     environment {
         GIT_PASS = 'win5do'
@@ -22,6 +17,13 @@ pipeline {
 
     stages {
         stage('build') {
+            agent {
+                docker {
+                    image 'golang:1.12.5'
+                    args  '-u root'
+                }
+            }
+
             steps {
                 git branch: "${params.BRANCH}", url: "${REPO}", credentialsId: "${GIT_PASS}"
                 sh './build.sh'
