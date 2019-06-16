@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: hello-service
+spec:
+  selector:
+    app: hello
+  ports:
+    - port: 5100
+      targetPort: 5100
+      protocol: TCP
+  type: NodePort
