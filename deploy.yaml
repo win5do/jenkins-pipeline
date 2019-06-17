@@ -1,45 +1,30 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: blog-solo
-  namespace: blog
+  name: hello-deployment
 spec:
   replicas: 3
-  selector:
-    matchLabels:
-      project: blog
-      app: solo
   template:
     metadata:
       labels:
-        project: blog
-        app: solo
+        app: hello
     spec:
-      imagePullSecrets:
-        - name: registry-pull-secret
       containers:
-        - name: solo
-          image: 192.168.161.151/projectdemo/testprodemo:latest
-          imagePullPolicy: Always
+        - name: hello
+          image: win5do/first
           ports:
-            - containerPort: 80
-              name: web
-              protocol: TCP
+            - containerPort: 5100
+
 ---
-apiVersion: v1
 kind: Service
+apiVersion: v1
 metadata:
-  name: blog-solo
-  namespace: blog
-  labels:
-    project: blog
-    app: solo
+  name: hello-service
 spec:
   selector:
-    project: blog
-    app: solo
+    app: hello
   ports:
-    - name: web
-      port: 80
-      targetPort: 80
+    - port: 5100
+      targetPort: 5100
+      protocol: TCP
   type: NodePort
