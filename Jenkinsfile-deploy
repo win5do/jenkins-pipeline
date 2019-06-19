@@ -37,14 +37,14 @@ pipeline {
                 }
                 sh 'ls -l'
                 sh 'cp cicd/Dockerfile .'
-                script {
-                    def latestImage = docker.build("${REGISTRY_NAME}:latest")
-                    def versionImage = docker.build("${REGISTRY_NAME}:${VERSION}")
-                    docker.withRegistry("${REGISTRY_URL}", "${REGISTRY_CREID}") {
-                        latestImage.push()
-                        versionImage.push()
-                    }
-                }
+//                script {
+//                    def latestImage = docker.build("${REGISTRY_NAME}:latest")
+//                    def versionImage = docker.build("${REGISTRY_NAME}:${VERSION}")
+//                    docker.withRegistry("${REGISTRY_URL}", "${REGISTRY_CREID}") {
+//                        latestImage.push()
+//                        versionImage.push()
+//                    }
+//                }
             }
         }
 
