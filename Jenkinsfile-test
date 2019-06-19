@@ -55,7 +55,7 @@ pipeline {
         stage('deploy') {
             steps {
                 kubernetesDeploy(
-                        configs: './deploy.yaml',
+                        configs: 'cicd/deploy.yaml',
                         kubeconfigId: 'kebuconfig',
                         enableConfigSubstitution: true,
                 )
