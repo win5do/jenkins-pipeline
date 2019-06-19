@@ -8,7 +8,9 @@ services:
     volumes:
       - ./registry:/var/lib/registry
   jenkins:
-    image: "jenkins/jenkins:lts"
+    build:
+      context: .
+      dockerfile: Dockerfile-jenkins
     user: root
     restart: unless-stopped
     ports:

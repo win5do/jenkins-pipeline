@@ -1,0 +1,4 @@
+FROM jenkins/jenkins:lts
+USER root
+COPY kubectl /usr/local/bin/kubectl
+RUN  chmod +x /usr/local/bin/kubectl
