@@ -26,7 +26,11 @@ pipeline {
     stages {
         stage('build') {
             steps {
-                git(branch: "${params.BRANCH}", url: "${REPO}", credentialsId: "${GIT_CREID}")
+                git(
+                        branch: "${params.BRANCH}",
+                        url: "${REPO}",
+                        credentialsId: "${GIT_CREID}",
+                )
                 sh './build.sh'
                 dir('cicd') {
                     git(
