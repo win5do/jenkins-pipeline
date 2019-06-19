@@ -54,11 +54,15 @@ pipeline {
 
         stage('deploy') {
             steps {
-                kubernetesDeploy(
-                        configs: 'cicd/deploy.yaml',
-                        kubeconfigId: 'kebuconfig',
-                        enableConfigSubstitution: true,
-                )
+                dir('cicd') {
+                    withCredentials([kubeconfigContent(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                        sh '''
+                        echo "$KUBECONFIG" > kubeconfig
+                        ls -l
+                        kubectl --kubeconfig kubeconfig apply -f deploy.yaml
+                    '''
+                    }
+                }
             }
         }
     }
