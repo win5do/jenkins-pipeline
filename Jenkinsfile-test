@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'golang:1.12.5'
-            args '-u root'
-        }
-    }
+    agent any
 
     environment {
         GIT_CREID = 'win5do'
@@ -24,42 +19,56 @@ pipeline {
     }
 
     stages {
-        stage('build') {
+        stage('clone') {
             steps {
-                git(
-                        branch: "${params.BRANCH}",
-                        url: "${REPO}",
-                        credentialsId: "${GIT_CREID}",
-                )
-                sh './build.sh'
-                dir('cicd') {
+                dir('vol') {
                     git(
-                            branch: 'cicd',
-                            url: "${CICD}",
+                            branch: "${params.BRANCH}",
+                            url: "${REPO}",
                             credentialsId: "${GIT_CREID}",
                     )
-                }
-                sh 'ls -l'
-                sh 'cp cicd/Dockerfile .'
-                script {
-                    def latestImage = docker.build("${REGISTRY_NAME}:latest")
-                    def versionImage = docker.build("${REGISTRY_NAME}:${VERSION}")
-                    docker.withRegistry("${REGISTRY_URL}", "${REGISTRY_CREID}") {
-                        latestImage.push()
-                        versionImage.push()
+
+                    dir('cicd') {
+                        git(
+                                branch: 'cicd',
+                                url: "${CICD}",
+                                credentialsId: "${GIT_CREID}",
+                        )
                     }
+                }
+            }
+        }
+
+        stage('build') {
+            steps {
+                script {
+                    docker.image('golang:1.12.5')
+                            .withRun('-v ${PWD}/vol:/vol')
+                            .inside {
+                                sh 'ls -l'
+                                sh 'cd vol && ./build.sh'
+                                sh 'cp cicd/Dockerfile .'
+                                script {
+                                    def latestImage = docker.build("${REGISTRY_NAME}:latest")
+                                    def versionImage = docker.build("${REGISTRY_NAME}:${VERSION}")
+                                    docker.withRegistry("${REGISTRY_URL}", "${REGISTRY_CREID}") {
+                                        latestImage.push()
+                                        versionImage.push()
+                                    }
+                                }
+                            }
                 }
             }
         }
 
         stage('deploy') {
             steps {
-                dir('cicd') {
+                dir('vol/cicd') {
                     withCredentials([kubeconfigContent(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                         sh '''
                         echo "$KUBECONFIG" > kubeconfig
                         ls -l
-                        kubectl --kubeconfig kubeconfig apply -f deploy.yaml
+                        kubectl --kubeconfig=kubeconfig apply -f deploy.yaml
                     '''
                     }
                 }
