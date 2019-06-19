@@ -21,20 +21,18 @@ pipeline {
     stages {
         stage('clone') {
             steps {
-                dir('vol') {
+                git(
+                        branch: "${params.BRANCH}",
+                        url: "${REPO}",
+                        credentialsId: "${GIT_CREID}",
+                )
+
+                dir('cicd') {
                     git(
-                            branch: "${params.BRANCH}",
-                            url: "${REPO}",
+                            branch: 'cicd',
+                            url: "${CICD}",
                             credentialsId: "${GIT_CREID}",
                     )
-
-                    dir('cicd') {
-                        git(
-                                branch: 'cicd',
-                                url: "${CICD}",
-                                credentialsId: "${GIT_CREID}",
-                        )
-                    }
                 }
             }
         }
@@ -42,28 +40,27 @@ pipeline {
         stage('build') {
             steps {
                 script {
-                    docker.image('golang:1.12.5')
-                            .withRun('-v ${PWD}/vol:/vol')
-                            .inside {
-                                sh 'ls -l'
-                                sh 'cd vol && ./build.sh'
-                                sh 'cp cicd/Dockerfile .'
-                                script {
-                                    def latestImage = docker.build("${REGISTRY_NAME}:latest")
-                                    def versionImage = docker.build("${REGISTRY_NAME}:${VERSION}")
-                                    docker.withRegistry("${REGISTRY_URL}", "${REGISTRY_CREID}") {
-                                        latestImage.push()
-                                        versionImage.push()
-                                    }
-                                }
+                    // inside默认挂载当前workspace，并将其设置为workdir
+                    docker.image('golang:1.12.5').inside() {
+                        sh 'ls -l'
+                        sh './build.sh'
+                        sh 'cp cicd/Dockerfile .'
+                        script {
+                            def latestImage = docker.build("${REGISTRY_NAME}:latest")
+                            def versionImage = docker.build("${REGISTRY_NAME}:${VERSION}")
+                            docker.withRegistry("${REGISTRY_URL}", "${REGISTRY_CREID}") {
+                                latestImage.push()
+                                versionImage.push()
                             }
+                        }
+                    }
                 }
             }
         }
 
         stage('deploy') {
             steps {
-                dir('vol/cicd') {
+                dir('cicd') {
                     withCredentials([kubeconfigContent(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                         sh '''
                         echo "$KUBECONFIG" > kubeconfig
