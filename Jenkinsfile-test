@@ -2,17 +2,17 @@ pipeline {
     agent none
 
     environment {
-        GIT_PASS = 'win5do'
+        GIT_CREID = 'win5do'
         REPO = 'https://github.com/win5do/go-hello-docker.git'
         CICD = 'https://github.com/win5do/jenkins-pipeline.git'
         VERSION = '1.0.0'
-        REGISTRY_PASS = 'dockerhub'
+        REGISTRY_CREID = 'dockerhub'
         REGISTRY_URL = 'https://registry.hub.docker.com'
         REGISTRY_NAME = 'win5do/first'
     }
 
     parameters {
-        choice name: 'BRANCH', choices: ['master']
+        choice(name: 'BRANCH', choices: ['master'])
     }
 
     stages {
@@ -20,22 +20,22 @@ pipeline {
             agent {
                 docker {
                     image 'golang:1.12.5'
-                    args  '-u root'
+                    args '-u root'
                 }
             }
 
             steps {
-                git branch: "${params.BRANCH}", url: "${REPO}", credentialsId: "${GIT_PASS}"
+                git(branch: "${params.BRANCH}", url: "${REPO}", credentialsId: "${GIT_CREID}")
                 sh './build.sh'
                 dir('cicd') {
-                    git branch: 'cicd', url: "${CICD}", credentialsId: "${GIT_PASS}"
+                    git(branch: 'cicd', url: "${CICD}", credentialsId: "${GIT_CREID}")
                 }
                 sh 'ls -l'
                 sh 'cp cicd/Dockerfile .'
                 script {
                     def latestImage = docker.build("${REGISTRY_NAME}:latest")
                     def versionImage = docker.build("${REGISTRY_NAME}:${VERSION}")
-                    docker.withRegistry("${REGISTRY_URL}",  "${REGISTRY_PASS}") {
+                    docker.withRegistry("${REGISTRY_URL}", "${REGISTRY_CREID}") {
                         latestImage.push()
                         versionImage.push()
                     }
@@ -44,8 +44,13 @@ pipeline {
         }
 
         stage('deploy') {
+            agent any
+
             steps {
-                echo 'todo deploy'
+                dir('cicd') {
+                    git(branch: 'cicd', url: "${CICD}", credentialsId: "${GIT_CREID}")
+                    kubernetesDeploy(configs: './deploy.yaml', kubeconfigId: 'kebuconfig')
+                }
             }
         }
     }

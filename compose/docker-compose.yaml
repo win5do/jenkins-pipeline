@@ -18,6 +18,8 @@ services:
       - ./jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/local/bin/docker:/usr/bin/docker
+      - /Users/wufeng/code/gopath/exe/kubectl:/usr/bin/kubectl
+      - /Users/wufeng/.minikube:/Users/wufeng/.minikube
   rancher:
     image: "rancher/rancher"
     restart: unless-stopped
