@@ -1,10 +1,11 @@
 version: '3'
 services:
-  registry:
+  docker-registry:
     image: "registry"
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      # local only
+      - "127.0.0.1:5000:5000"
     volumes:
       - ./registry:/var/lib/registry
   jenkins:
@@ -20,7 +21,7 @@ services:
       - ./jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/local/bin/docker:/usr/bin/docker
-      - /Users/wufeng/code/gopath/exe/kubectl:/usr/bin/kubectl
+      # 后续去掉配置在jenkins中
       - /Users/wufeng/.minikube:/Users/wufeng/.minikube
   rancher:
     image: "rancher/rancher"

@@ -8,7 +8,7 @@ pipeline {
         VERSION = '1.0.0'
         REGISTRY_CREID = 'dockerhub'
         REGISTRY_URL = 'https://registry.hub.docker.com'
-        REGISTRY_NAME = 'win5do/first'
+        IMAGE_NAME = 'win5do/first'
     }
 
     parameters {
@@ -46,8 +46,8 @@ pipeline {
                         sh './build.sh'
                         sh 'cp cicd/Dockerfile .'
                         script {
-                            def latestImage = docker.build("${REGISTRY_NAME}:latest")
-                            def versionImage = docker.build("${REGISTRY_NAME}:${VERSION}")
+                            def latestImage = docker.build("${IMAGE_NAME}:latest")
+                            def versionImage = docker.build("${IMAGE_NAME}:${VERSION}")
                             docker.withRegistry("${REGISTRY_URL}", "${REGISTRY_CREID}") {
                                 latestImage.push()
                                 versionImage.push()

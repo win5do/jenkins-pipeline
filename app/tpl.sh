@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-name='hello'
-image='win5do/first'
-replicas=2
-port='5100'
-output=out/$name.yaml
+
+name=${name:='test'}
+image=${image:='test'}
+replicas=${replicas:=2}
+port=${port:=5100}
+
+output=out/deploy.yaml
 
 test -e out && rm -rf out
 mkdir out
