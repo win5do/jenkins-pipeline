@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: hello
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # 不要重定向到443
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  backend:
+    serviceName: echo
+    servicePort: 3000
+  rules:
+    - http:
+        paths:
+          - path: /hello
+            backend:
+              serviceName: hello-service
+              servicePort: 5100
+          - path: /echo
+            backend:
+              serviceName: echo
+              servicePort: 3000
