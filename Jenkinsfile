@@ -1,4 +1,4 @@
-// 127.0.0.1:5000/win5do/first:latest
+// 192.168.99.1:5000/win5do/first:latest
 def imageName = ''
 
 pipeline {
@@ -11,7 +11,8 @@ pipeline {
         // ${env.BUILD_TAG}
         VERSION = '1.0.0'
         REGISTRY_CREID = ''
-        REGISTRY_URL = 'http://127.0.0.1:5000'
+        // 应使用内网地址，jenkins和k8s都可以访问到
+        REGISTRY_URL = 'http://192.168.99.1:5000'
         IMAGE_NAME = 'win5do/first'
     }
 

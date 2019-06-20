@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     ports:
       # local only
-      - "127.0.0.1:5000:5000"
+      - "192.168.99.1:5000:5000"
     volumes:
       - ./registry:/var/lib/registry
   jenkins:
