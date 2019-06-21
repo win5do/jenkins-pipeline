@@ -1,5 +1,6 @@
 // 192.168.99.1:5000/win5do/first:latest
-def imageName = ''
+def IMAGE_FULL_NAME = ''
+def PORT = 5100
 
 pipeline {
     agent any
@@ -53,11 +54,15 @@ pipeline {
                 script {
                     // inside默认挂载当前workspace，并将其设置为workdir
                     docker.image('golang:1.12.5').inside() {
-                        sh '''
+                        sh """
                             ls -l
+                            workdir=`pwd`
                             ./build.sh
-                            cp cicd/Dockerfile .
-                        '''
+                            cd cicd/app
+                            port=${PORT} ./sedDockfile.sh
+                            cp out/Dockerfile \$workdir
+                            cd \$workdir
+                        """
 
                         script {
                             docker.withRegistry("${REGISTRY_URL}") {
@@ -66,7 +71,7 @@ pipeline {
                                 latestImage.push()
                                 versionImage.push()
 
-                                imageName = latestImage.imageName()
+                                IMAGE_FULL_NAME = latestImage.imageName()
                             }
                         }
                         echo "${imageName}"
@@ -78,11 +83,11 @@ pipeline {
         stage('deploy') {
             steps {
                 dir('cicd/app') {
-                    withCredentials([kubeconfigContent(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    withCredentials([kubeconfigContent(credentialsId: 'kubeconfig', variable: 'KUBE_CONFIG')]) {
                         sh """
                             ls -l
-                            name='hello' image="${imageName}" ./tpl.sh
-                            echo "${KUBECONFIG}" > kubeconfig
+                            name='hello' image="${IMAGE_FULL_NAME}" ./tpl.sh
+                            echo "${KUBE_CONFIG}" > kubeconfig
                             kubectl --kubeconfig=kubeconfig apply -f out/deploy.yaml
                         """
                     }
