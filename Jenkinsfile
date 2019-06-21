@@ -59,7 +59,7 @@ pipeline {
                             workdir=`pwd`
                             ./build.sh
                             cd cicd/app
-                            port=${PORT} ./sedDockfile.sh
+                            port=${PORT} ./sedDockerfile.sh
                             cp out/Dockerfile \$workdir
                             cd \$workdir
                         """

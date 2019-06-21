@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+
+    environment {
+        REPO = 'https://github.com/win5do/go-hello-docker.git'
+    }
+
+    stages {
+        stage('test') {
+            steps {
+                echo "$REPO"
+                script {
+                    REPO = 'XXX'
+                }
+                echo "${REPO}"
+            }
+        }
+    }
+}

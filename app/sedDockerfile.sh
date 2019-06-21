@@ -3,7 +3,7 @@
 port=${port}
 
 tpl=${tpl:=tpl/Dockerfile-go}
-output=out/Dockfile
+output=out/Dockerfile
 
 test -e out && rm -rf out
 mkdir out
