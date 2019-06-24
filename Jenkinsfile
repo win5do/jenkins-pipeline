@@ -1,4 +1,4 @@
-// 192.168.99.1:5000/win5do/first:latest
+// xx.xx.xx.xx:5000/win5do/first:latest
 def IMAGE_FULL_NAME = ''
 def PORT = 5100
 
@@ -13,7 +13,8 @@ pipeline {
         VERSION = '1.0.0'
         REGISTRY_CREID = ''
         // 应使用内网地址，jenkins和k8s都可以访问到
-        REGISTRY_URL = 'http://192.168.99.1:5000'
+        // REGISTRY_URL = 'http://192.168.99.1:5000'
+        REGISTRY_URL = 'http://192.168.1.239:5000'
         IMAGE_NAME = 'win5do/first'
     }
 
@@ -59,22 +60,19 @@ pipeline {
                             workdir=`pwd`
                             ./build.sh
                             cd cicd/app
-                            port=${PORT} ./sedDockerfile.sh
+                            port="${PORT}" ./sedDockerfile.sh
                             cp out/Dockerfile \$workdir
                             cd \$workdir
                         """
 
                         script {
                             docker.withRegistry("${REGISTRY_URL}") {
-                                def latestImage = docker.build("${IMAGE_NAME}:latest")
                                 def versionImage = docker.build("${IMAGE_NAME}:${VERSION}")
-                                latestImage.push()
                                 versionImage.push()
-
-                                IMAGE_FULL_NAME = latestImage.imageName()
+                                IMAGE_FULL_NAME = versionImage.imageName()
                             }
                         }
-                        echo "${imageName}"
+                        echo "${IMAGE_FULL_NAME}"
                     }
                 }
             }
@@ -86,9 +84,11 @@ pipeline {
                     withCredentials([kubeconfigContent(credentialsId: 'kubeconfig', variable: 'KUBE_CONFIG')]) {
                         sh """
                             ls -l
-                            name='hello' image="${IMAGE_FULL_NAME}" ./tpl.sh
+                            name='hello' image="${IMAGE_FULL_NAME}" port="${PORT}" ./sedDeploy.sh
+                            deployFile=out/deploy.yaml
+                            cat \$deployFile
                             echo "${KUBE_CONFIG}" > kubeconfig
-                            kubectl --kubeconfig=kubeconfig apply -f out/deploy.yaml
+                            kubectl --kubeconfig=kubeconfig apply -f \$deployFile
                         """
                     }
                 }
