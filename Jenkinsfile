@@ -1,6 +1,7 @@
+def NAME = 'hello'
+def PORT = 5100
 // xx.xx.xx.xx:5000/win5do/first:latest
 def IMAGE_FULL_NAME = ''
-def PORT = 5100
 
 pipeline {
     agent any
@@ -84,7 +85,7 @@ pipeline {
                     withCredentials([kubeconfigContent(credentialsId: 'kubeconfig', variable: 'KUBE_CONFIG')]) {
                         sh """
                             ls -l
-                            name='hello' image="${IMAGE_FULL_NAME}" port="${PORT}" ./sedDeploy.sh
+                            name="${NAME}" image="${IMAGE_FULL_NAME}" port="${PORT}" ./sedDeploy.sh
                             deployFile=out/deploy.yaml
                             cat \$deployFile
                             echo "${KUBE_CONFIG}" > kubeconfig
